@@ -1,0 +1,74 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model RewardHistory {
+  id    Int      @id @default(autoincrement())
+  title String
+  date  DateTime
+  point Int
+}
+
+model GameficationReward {
+  id    Int    @id @default(autoincrement())
+  title String
+  point Int
+}
+
+model Project {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String
+  milestones  Milestone[]
+  color       String
+  tasks       Task[]
+}
+
+model Milestone {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  content   String
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
+}
+
+model TimeBlock {
+  id     Int      @id @default(autoincrement())
+  start  DateTime
+  end    DateTime
+  task   Task?    @relation(fields: [taskId], references: [id])
+  taskId Int?
+}
+
+model Task {
+  id         Int         @id @default(autoincrement())
+  title      String
+  content    String
+  status     String // Enum 타입 사용 가능
+  point      Int
+  timeBlocks TimeBlock[]
+  documents  Document[]
+  Project    Project?    @relation(fields: [projectId], references: [id])
+  projectId  Int?
+}
+
+model Document {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String
+  docType     String // Enum 타입 사용 가능
+  template    String?
+  url         String
+  tasks       Task[]
+}
+
+model Habit {
+  id    Int    @id @default(autoincrement())
+  title String
+  point Int
+}

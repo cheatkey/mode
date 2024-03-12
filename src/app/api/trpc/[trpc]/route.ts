@@ -1,4 +1,4 @@
-import { appRouter } from "@/server/routers/app";
+import { appRouter } from "@/server/controller/app";
 import {
   FetchCreateContextFnOptions,
   fetchRequestHandler,
