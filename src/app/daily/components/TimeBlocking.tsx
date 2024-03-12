@@ -190,18 +190,26 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
         />
       </div>
 
-      <div className="bg-gray-950 flex-1 rounded-2xl p-8">
-        {Object.entries(counters).map(([name, count]) => (
-          <div
-            draggable="true"
-            key={name}
-            onDragStart={() => {
-              handleDragStart({ title: formatName(name, count), name });
-            }}
-          >
-            {formatName(name, count)}
-          </div>
-        ))}
+      <div className="flex flex-1 flex-col gap-4">
+        <div className="bg-gray-950 p-8 rounded-2xl">
+          <p className="text-gray-200 font-semibold text-xl">Routine</p>
+        </div>
+
+        <div className="bg-gray-950 flex flex-1 flex-col gap-4 rounded-2xl p-8">
+          <p className="text-gray-200 font-semibold text-xl">Featured Tasks</p>
+          {Object.entries(counters).map(([name, count]) => (
+            <div
+              className="bg-[#1a1a1a] border-2 border-gray-00 rounded-2xl p-5"
+              draggable="true"
+              key={name}
+              onDragStart={() => {
+                handleDragStart({ title: formatName(name, count), name });
+              }}
+            >
+              {formatName(name, count)}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
