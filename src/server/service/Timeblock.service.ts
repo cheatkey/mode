@@ -1,5 +1,6 @@
 import { isNil } from "lodash-es";
 import { prisma } from "../prisma";
+import dayjs from "dayjs";
 
 class TimeblockService {
   createTimeBlock = async (input: {
@@ -49,6 +50,22 @@ class TimeblockService {
       };
 
     return prisma.timeBlock.update(payload);
+  };
+
+  findDailyTimeBlock = async (input: { date: string }) => {
+    const dayStart = dayjs(input.date).startOf("day").toDate();
+    const dayEnd = dayjs(input.date).endOf("day").toDate();
+
+    return prisma.timeBlock.findMany({
+      where: {
+        start: {
+          gte: dayStart,
+        },
+        end: {
+          lte: dayEnd,
+        },
+      },
+    });
   };
 }
 

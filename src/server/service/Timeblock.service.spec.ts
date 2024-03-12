@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { prisma } from "../prisma";
 import { timeblockService } from "./Timeblock.service";
 
@@ -32,5 +33,27 @@ describe("timeblockService testing", () => {
     });
     expect(createdTimeblock?.start).toEqual(startDate);
     expect(createdTimeblock?.task?.id).toEqual(task.id);
+  });
+
+  it("오늘로 지정된 타임 블록만 조회", async () => {
+    await timeblockService.createTimeBlock({
+      start: dayjs("2024/3/11 20:20").toDate(),
+      end: dayjs("2024/3/11 21:20").toDate(),
+    });
+    await timeblockService.createTimeBlock({
+      start: dayjs("2024/3/12 20:20").toDate(),
+      end: dayjs("2024/3/12 21:20").toDate(),
+    });
+    await timeblockService.createTimeBlock({
+      start: dayjs("2024/3/12 20:20").toDate(),
+      end: dayjs("2024/3/13 0:20").toDate(),
+    });
+
+    const dailyTimeblocks = await timeblockService.findDailyTimeBlock({
+      date: "2024/3/12",
+    });
+    expect(dailyTimeblocks.length).toBe(1);
+    expect(dailyTimeblocks[0].start).toEqual(dayjs("2024/3/12 20:20").toDate());
+    expect(dailyTimeblocks[0].end).toEqual(dayjs("2024/3/12 21:20").toDate());
   });
 });

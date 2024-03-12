@@ -1,25 +1,31 @@
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { z } from "zod";
+import { timeblockService } from "../service/Timeblock.service";
+
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Seoul");
 
 const t = initTRPC.create({
   transformer: superjson,
 });
 
 export const appRouter = t.router({
-  getUsers: t.procedure.query(({ ctx }) => {
-    return userList;
-  }),
-  addUsers: t.procedure
-    .input(
-      z.object({
-        name: z.string(),
-      })
-    )
-    .mutation(async (opts) => {
-      console.log("인풋된 데이터", opts.input.name);
-      return opts.input.name;
-    }),
+  timeblock: {
+    getDailyTimeblocks: t.procedure
+      .input(
+        z.object({
+          date: z.string(),
+        })
+      )
+      .query(async (opts) => {
+        return timeblockService.findDailyTimeBlock({ date: opts.input.date });
+      }),
+  },
 });
 
 export type AppRouter = typeof appRouter;
