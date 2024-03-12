@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 
 class TimeblockService {
   createTimeBlock = async (input: {
+    title?: string;
     start: Date;
     end: Date;
     taskID?: number;
@@ -12,6 +13,7 @@ class TimeblockService {
       data: {
         start: input.start,
         end: input.end,
+        title: input.title ?? "Time Slot",
       },
     };
 
@@ -28,6 +30,7 @@ class TimeblockService {
   updateTimeBlock = async (input: {
     id: number;
     data: {
+      title?: string;
       start?: Date;
       end?: Date;
       taskID?: number;
@@ -40,6 +43,7 @@ class TimeblockService {
       data: {},
     };
 
+    if (!isNil(input.data.title)) payload.data.title = input.data.title;
     if (!isNil(input.data.start)) payload.data.start = input.data.start;
     if (!isNil(input.data.end)) payload.data.end = input.data.end;
     if (!isNil(input.data.taskID))
@@ -63,6 +67,13 @@ class TimeblockService {
         },
         end: {
           lte: dayEnd,
+        },
+      },
+      include: {
+        task: {
+          select: {
+            title: true,
+          },
         },
       },
     });

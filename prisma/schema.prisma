@@ -43,6 +43,7 @@ model TimeBlock {
   end    DateTime
   task   Task?    @relation(fields: [taskId], references: [id])
   taskId Int?
+  title  String
 }
 
 model Task {

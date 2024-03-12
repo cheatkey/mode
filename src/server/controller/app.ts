@@ -16,14 +16,41 @@ const t = initTRPC.create({
 
 export const appRouter = t.router({
   timeblock: {
+    updateTimeblock: t.procedure
+      .input(
+        z.object({
+          id: z.number(),
+          data: z.object({
+            title: z.optional(z.string()),
+            start: z.optional(z.date()),
+            end: z.optional(z.date()),
+            taskID: z.optional(z.number()),
+          }),
+        })
+      )
+      .mutation(async (req) => {
+        return timeblockService.updateTimeBlock(req.input);
+      }),
+    createTimeblock: t.procedure
+      .input(
+        z.object({
+          title: z.optional(z.string()),
+          start: z.date(),
+          end: z.date(),
+          taskID: z.optional(z.number()),
+        })
+      )
+      .mutation(async (req) => {
+        return timeblockService.createTimeBlock(req.input);
+      }),
     getDailyTimeblocks: t.procedure
       .input(
         z.object({
           date: z.string(),
         })
       )
-      .query(async (opts) => {
-        return timeblockService.findDailyTimeBlock({ date: opts.input.date });
+      .query(async (req) => {
+        return timeblockService.findDailyTimeBlock({ date: req.input.date });
       }),
   },
 });

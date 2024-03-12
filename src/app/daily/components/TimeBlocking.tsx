@@ -27,58 +27,49 @@ import { nanoid } from "nanoid";
 import { cloneDeep } from "lodash-es";
 import { trpc } from "@/server/trpc";
 import { revalidatePath } from "next/cache";
-import { useAsyncFn } from "react-use";
+import { useAsyncFn, useMount } from "react-use";
+import TimeEvent from "./TimeEvent";
+import dayjs from "dayjs";
 
 interface TimeBlockingProps {}
 
-const formatName = (name, count) => `${name} ID ${count}`;
-
 const TimeBlocking = ({}: TimeBlockingProps) => {
   const [draggedEvent, setDraggedEvent] = useState<{
-    name: string;
+    time?: number;
     title: string;
   } | null>(null);
-  // const serverEvents = use(
-  //   trpc.timeblock.getDailyTimeblocks.query({ date: "2024/3/12" })
-  // );
 
   const [serverEvents, doFetch] = useAsyncFn(async () => {
     const data = await trpc.timeblock.getDailyTimeblocks.query({
-      date: "2024/3/12",
+      date: "2024/3/13",
     });
-    console.log("data", data);
+    console.log("data:", data);
     return data;
   }, []);
 
-  const [events, setEvents] = useState<
-    {
-      title: string;
-      start: Date;
-      end: Date;
-      id: string;
-    }[]
-  >([]);
-  // revalidatePath
+  const updateTimeblock = useCallback(
+    async (id: number, data: { start?: Date; end?: Date }) => {
+      await trpc.timeblock.updateTimeblock.mutate({
+        id,
+        data: {
+          start: data.start,
+          end: data.end,
+        },
+      });
+      await doFetch();
+    },
+    [doFetch]
+  );
 
-  const [counters, setCounters] = useState({ item1: 0, item2: 0 });
+  useMount(() => {
+    doFetch();
+  });
 
-  const onEventResize: withDragAndDropProps["onEventResize"] = (data) => {
+  const onEventResize: withDragAndDropProps["onEventResize"] = async (data) => {
     const id = (data.event as any).id;
     const start = new Date(data.start);
     const end = new Date(data.end);
-
-    setEvents(
-      cloneDeep(events).map((current) => {
-        if (current.id === id) {
-          return {
-            ...current,
-            start,
-            end,
-          };
-        }
-        return current;
-      })
-    );
+    updateTimeblock(id, { start, end });
   };
 
   const onEventDrop: withDragAndDropProps["onEventDrop"] = (data) => {
@@ -86,34 +77,31 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
     const start = new Date(data.start);
     const end = new Date(data.end);
 
-    setEvents(
-      cloneDeep(events).map((current) => {
-        if (current.id === id) {
-          return {
-            ...current,
-            start,
-            end,
-          };
-        }
-        return current;
-      })
-    );
+    updateTimeblock(id, { start, end });
   };
 
-  const handleSelectSlot = useCallback(
-    ({ start, end }: SlotInfo) => {
-      const title = window.prompt("New Event Name");
-      if (title) {
-        setEvents((prev) => [...prev, { start, end, title, id: nanoid() }]);
-      }
+  const handleCreateTask = useCallback(
+    async ({
+      start,
+      end,
+      title,
+    }: {
+      title?: string;
+      start: Date;
+      end: Date;
+    }) => {
+      await trpc.timeblock.createTimeblock.mutate({
+        start,
+        end,
+        title,
+      });
+
+      await doFetch();
     },
-    [setEvents]
+    [doFetch]
   );
 
-  const handleSelectEvent = useCallback(
-    (event: Event) => window.alert(event.title),
-    []
-  );
+  const handleSelectEvent = useCallback((event: Event) => {}, []);
 
   const eventPropGetter = useCallback(
     (event: any) => ({
@@ -126,69 +114,41 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
 
   const dragFromOutsideItem = useCallback(() => draggedEvent, [draggedEvent]);
 
-  const getNewEvent = useCallback(
-    (event: Event) => {
-      setEvents((prev) => {
-        const idList = prev.map((item) => item.id);
-        const newId = Math.max(...idList) + 1;
-        return [...prev, { ...event, id: newId }];
-      });
-    },
-    [setEvents]
-  );
-
   const onDropFromOutside = useCallback(
     ({ start, end, allDay: isAllDay }: DragFromOutsideItemArgs) => {
       if (!draggedEvent) return;
 
-      const { name } = draggedEvent;
+      const { title, time } = draggedEvent;
+      console.log(draggedEvent);
       const event = {
-        title: formatName(name, (counters as any)[name]),
-        start,
-        end,
-        isAllDay,
+        title,
+        start: new Date(start),
+        end: dayjs(start)
+          .add(time ?? 10, "minute")
+          .toDate(),
       };
       setDraggedEvent(null);
-      setCounters((prev) => {
-        const { [name]: count } = prev;
-        return {
-          ...prev,
-          [name]: count + 1,
-        };
-      });
-      getNewEvent(event);
+
+      handleCreateTask(event);
     },
-    [draggedEvent, counters, setDraggedEvent, setCounters, getNewEvent]
+    [draggedEvent, handleCreateTask]
   );
 
   const handleDragStart = useCallback((event) => setDraggedEvent(event), []);
-
-  const CustomEvent = ({ event }) => {
-    return (
-      <div className="flex flex-col gap-0">
-        <p className="text-gray-100 text-lg font-bold tracking-tight">
-          {event.title}
-        </p>
-        <p className="text-gray-300 text-base">
-          {format(event.start, "HH:mm")} ~ {format(event.end, "HH:mm")}
-        </p>
-      </div>
-    );
-  };
 
   return (
     <div className="flex flex-row gap-4">
       <div className="bg-gray-950 w-[700px] p-8 pl-5 pt-2 rounded-2xl overflow-hidden">
         <DnDCalendar
           defaultView="day"
-          events={events}
+          events={serverEvents.value}
           localizer={localizer}
           onEventDrop={onEventDrop}
           onEventResize={onEventResize}
           resizable
           style={{ height: "100vh" }}
           onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleSelectSlot}
+          onSelectSlot={handleCreateTask}
           selectable
           eventPropGetter={eventPropGetter}
           onDropFromOutside={onDropFromOutside}
@@ -196,7 +156,7 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
           step={10}
           timeslots={12}
           components={{
-            event: CustomEvent,
+            event: TimeEvent,
             toolbar: () => <></>,
           }}
         />
@@ -205,22 +165,29 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
       <div className="flex flex-1 flex-col gap-4">
         <div className="bg-gray-950 p-8 rounded-2xl">
           <p className="text-gray-200 font-semibold text-xl">Routine</p>
-          <span>{JSON.stringify(serverEvents, null, 4)}</span>
-          <button onClick={doFetch}>revalidatePath</button>
         </div>
 
         <div className="bg-gray-950 flex flex-1 flex-col gap-4 rounded-2xl p-8">
           <p className="text-gray-200 font-semibold text-xl">Featured Tasks</p>
-          {Object.entries(counters).map(([name, count]) => (
+          {[
+            {
+              title: "헬스장 가기",
+              time: 60,
+            },
+            {
+              title: "영어 공부 하기",
+              time: 30,
+            },
+          ].map((item) => (
             <div
               className="bg-[#1a1a1a] border-2 border-gray-00 rounded-2xl p-5"
               draggable="true"
-              key={name}
+              key={item.title}
               onDragStart={() => {
-                handleDragStart({ title: formatName(name, count), name });
+                handleDragStart(item);
               }}
             >
-              {formatName(name, count)}
+              {item.title} ({item.time})
             </div>
           ))}
         </div>

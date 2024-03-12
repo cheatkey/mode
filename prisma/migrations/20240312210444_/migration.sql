@@ -43,6 +43,7 @@ CREATE TABLE "TimeBlock" (
     "start" TIMESTAMP(3) NOT NULL,
     "end" TIMESTAMP(3) NOT NULL,
     "taskId" INTEGER,
+    "title" TEXT NOT NULL,
 
     CONSTRAINT "TimeBlock_pkey" PRIMARY KEY ("id")
 );
