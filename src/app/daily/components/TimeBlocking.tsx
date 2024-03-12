@@ -1,5 +1,5 @@
 "use client";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, use, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Calendar,
   CalendarProps,
@@ -25,10 +25,9 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
 import { nanoid } from "nanoid";
 import { cloneDeep } from "lodash-es";
-
-interface DraggableMouseEvent extends MouseEvent {
-  isDraggable: boolean;
-}
+import { trpc } from "@/server/trpc";
+import { revalidatePath } from "next/cache";
+import { useAsyncFn } from "react-use";
 
 interface TimeBlockingProps {}
 
@@ -39,6 +38,18 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
     name: string;
     title: string;
   } | null>(null);
+  // const serverEvents = use(
+  //   trpc.timeblock.getDailyTimeblocks.query({ date: "2024/3/12" })
+  // );
+
+  const [serverEvents, doFetch] = useAsyncFn(async () => {
+    const data = await trpc.timeblock.getDailyTimeblocks.query({
+      date: "2024/3/12",
+    });
+    console.log("data", data);
+    return data;
+  }, []);
+
   const [events, setEvents] = useState<
     {
       title: string;
@@ -47,6 +58,7 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
       id: string;
     }[]
   >([]);
+  // revalidatePath
 
   const [counters, setCounters] = useState({ item1: 0, item2: 0 });
 
@@ -193,6 +205,8 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
       <div className="flex flex-1 flex-col gap-4">
         <div className="bg-gray-950 p-8 rounded-2xl">
           <p className="text-gray-200 font-semibold text-xl">Routine</p>
+          <span>{JSON.stringify(serverEvents, null, 4)}</span>
+          <button onClick={doFetch}>revalidatePath</button>
         </div>
 
         <div className="bg-gray-950 flex flex-1 flex-col gap-4 rounded-2xl p-8">
