@@ -1,8 +1,6 @@
 .rbc-event {
-  background: #1a1a1a;
-  border: 2px solid #ab68ff !important;
-  border-radius: 15px;
-  padding: 20px;
+  background: transparent;
+  border: none !important;
 }
 
 .rbc-today {
