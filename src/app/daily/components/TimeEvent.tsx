@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDebounce, useMeasure } from "react-use";
 import { format } from "date-fns/format";
 import { trpc } from "@/server/trpc";
+import useCustomContextMenu from "./hooks/useCustomContextMenu";
 
 interface TimeEventProps {
   event: {
@@ -11,9 +12,11 @@ interface TimeEventProps {
     taskId: null;
     title: string;
   };
+  doFetch: () => Promise<void>;
 }
 
-const TimeEvent = ({ event }: TimeEventProps) => {
+const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
+  const { handleContextMenu, visible, position } = useCustomContextMenu();
   const [ref, { height }] = useMeasure<HTMLDivElement>();
   const [title, setTitle] = useState<string>(event.title);
 
@@ -30,13 +33,20 @@ const TimeEvent = ({ event }: TimeEventProps) => {
     [title]
   );
 
-  //   background: #1a1a1a;
-  //   border: 2px solid #ab68ff !important;
-  //   border-radius: 15px;
-  //   padding: 20px;
+  const menu = [
+    {
+      name: "삭제",
+      onClick: async () => {
+        await trpc.timeblock.deleteTimeblock.mutate({
+          id: event.id,
+        });
+        await doFetch();
+      },
+    },
+  ];
 
   return (
-    <div ref={ref} className="h-full">
+    <div ref={ref} className="h-full" onContextMenu={handleContextMenu}>
       {height < 80 ? (
         <div
           className={`flex flex-row gap-2 h-full items-center bg-[#1a1a1a] border-2 border-[#ab68ff] px-5 py-1 ${
@@ -44,7 +54,9 @@ const TimeEvent = ({ event }: TimeEventProps) => {
           }`}
         >
           <input
-            className="text-gray-100 text-lg font-bold tracking-tight bg-transparent"
+            className={`text-gray-100 font-bold tracking-tight bg-transparent ${
+              height < 25 ? "text-lg" : "text-lg"
+            }`}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -65,6 +77,28 @@ const TimeEvent = ({ event }: TimeEventProps) => {
               {format(event.start, "HH:mm")} ~ {format(event.end, "HH:mm")}
             </p>
           </div>
+        </div>
+      )}
+
+      {visible && (
+        <div
+          className="bg-gray-800 z-50 p-2 rounded-md min-w-40 flex flex-col"
+          style={{
+            position: "fixed",
+            top: position.y,
+            left: position.x,
+            // boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;",
+          }}
+        >
+          {menu.map(({ name, onClick }) => (
+            <p
+              key={name}
+              onClick={onClick}
+              className="text-left hover:bg-gray-900 transition-colors py-3 px-4 rounded-sm"
+            >
+              {name}
+            </p>
+          ))}
         </div>
       )}
     </div>
