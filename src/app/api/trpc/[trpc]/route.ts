@@ -5,11 +5,14 @@ import {
 } from "@trpc/server/adapters/fetch";
 
 const handler = (request: Request) => {
-  console.log(`incoming request ${request.url}`);
   return fetchRequestHandler({
     endpoint: "/api/trpc",
     req: request,
     router: appRouter,
+    onError(opts) {
+      const { error, type, path, input, ctx, req } = opts;
+      console.error("Error:", error);
+    },
     createContext: function (
       opts: FetchCreateContextFnOptions
     ): object | Promise<object> {
