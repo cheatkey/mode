@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { useDebounce, useMeasure } from "react-use";
+import React, { useRef, useState } from "react";
+import { useClickAway, useDebounce, useMeasure } from "react-use";
 import { format } from "date-fns/format";
 import { trpc } from "@/server/trpc";
 import useCustomContextMenu from "./hooks/useCustomContextMenu";
+import { mergeRefs } from "react-merge-refs";
 
 interface TimeEventProps {
   event: {
@@ -16,9 +17,11 @@ interface TimeEventProps {
 }
 
 const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
-  const { handleContextMenu, visible, position } = useCustomContextMenu();
-  const [ref, { height }] = useMeasure<HTMLDivElement>();
+  const { handleContextMenu, visible, position, setVisible } =
+    useCustomContextMenu();
+  const [measureRef, { height }] = useMeasure<HTMLDivElement>();
   const [title, setTitle] = useState<string>(event.title);
+  const ref = useRef<HTMLDivElement>(null);
 
   const [, cancel] = useDebounce(
     () => {
@@ -33,6 +36,10 @@ const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
     [title]
   );
 
+  useClickAway(ref, () => {
+    setVisible(false);
+  });
+
   const menu = [
     {
       name: "삭제",
@@ -46,7 +53,11 @@ const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
   ];
 
   return (
-    <div ref={ref} className="h-full" onContextMenu={handleContextMenu}>
+    <div
+      ref={mergeRefs([measureRef, ref])}
+      className="h-full"
+      onContextMenu={handleContextMenu}
+    >
       {height < 80 ? (
         <div
           className={`flex flex-row gap-2 h-full items-center bg-[#1a1a1a] border-2 border-[#ab68ff] px-5 py-1 ${

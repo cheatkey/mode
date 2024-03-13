@@ -10,7 +10,7 @@ const useCustomContextMenu = () => {
     setPosition({ x: event.clientX, y: event.clientY });
   };
 
-  return { handleContextMenu, visible, position };
+  return { handleContextMenu, visible, position, setVisible };
 };
 
 export default useCustomContextMenu;
