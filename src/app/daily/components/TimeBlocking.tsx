@@ -32,9 +32,11 @@ import TimeEvent from "./TimeEvent";
 import dayjs from "dayjs";
 import useClickDragDetector from "./hooks/useClickDragDetector";
 
-interface TimeBlockingProps {}
+interface TimeBlockingProps {
+  date: string;
+}
 
-const TimeBlocking = ({}: TimeBlockingProps) => {
+const TimeBlocking = ({ date }: TimeBlockingProps) => {
   const [draggedEvent, setDraggedEvent] = useState<{
     time?: number;
     title: string;
@@ -42,7 +44,7 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
 
   const [serverEvents, doFetch] = useAsyncFn(async () => {
     const data = await trpc.timeblock.getDailyTimeblocks.query({
-      date: "2024/3/13",
+      date: date,
     });
     console.log("data:", data);
     return data;
@@ -150,12 +152,19 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
       >
         <DnDCalendar
           defaultView="day"
+          min={dayjs(date).hour(4).minute(30).second(0).millisecond(0).toDate()}
+          max={dayjs(date)
+            .hour(23)
+            .minute(59)
+            .second(0)
+            .millisecond(0)
+            .toDate()}
           events={serverEvents.value}
           localizer={localizer}
           onEventDrop={onEventDrop}
           onEventResize={onEventResize}
           resizable
-          style={{ height: "4000px" }}
+          style={{ height: "3000px" }}
           onSelectEvent={handleSelectEvent}
           onSelectSlot={(slotInfo) => {
             if (isDragging) handleCreateTask(slotInfo);
@@ -166,7 +175,7 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
           onDropFromOutside={onDropFromOutside}
           dragFromOutsideItem={dragFromOutsideItem}
           step={10}
-          timeslots={12}
+          timeslots={6}
           components={{
             event: (props) => <TimeEvent {...props} doFetch={doFetch} />,
             toolbar: () => <></>,

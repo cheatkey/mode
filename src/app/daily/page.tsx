@@ -14,7 +14,7 @@ const DailyPage = ({}: DailyPageProps) => {
           </div>
         </div>
 
-        <TimeBlocking />
+        <TimeBlocking date={"2024/3/13"} />
       </main>
     </div>
   );
