@@ -30,6 +30,7 @@ import { revalidatePath } from "next/cache";
 import { useAsyncFn, useMount } from "react-use";
 import TimeEvent from "./TimeEvent";
 import dayjs from "dayjs";
+import useClickDragDetector from "./hooks/useClickDragDetector";
 
 interface TimeBlockingProps {}
 
@@ -46,6 +47,9 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
     console.log("data:", data);
     return data;
   }, []);
+
+  const { isDragging, setIsDragging, handleMouseDown, handleMouseUp } =
+    useClickDragDetector();
 
   const updateTimeblock = useCallback(
     async (id: number, data: { start?: Date; end?: Date }) => {
@@ -90,6 +94,7 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
       start: Date;
       end: Date;
     }) => {
+      console.log("handleCreateTask", { start, end, title });
       await trpc.timeblock.createTimeblock.mutate({
         start,
         end,
@@ -138,7 +143,11 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
 
   return (
     <div className="flex flex-row gap-4">
-      <div className="bg-gray-950 w-[700px] p-8 pl-5 pt-2 rounded-2xl overflow-hidden">
+      <div
+        className="bg-gray-950 w-[700px] p-8 pl-5 pt-2 rounded-2xl overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+      >
         <DnDCalendar
           defaultView="day"
           events={serverEvents.value}
@@ -146,9 +155,12 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
           onEventDrop={onEventDrop}
           onEventResize={onEventResize}
           resizable
-          style={{ height: "100vh" }}
+          style={{ height: "4000px" }}
           onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleCreateTask}
+          onSelectSlot={(slotInfo) => {
+            if (isDragging) handleCreateTask(slotInfo);
+            setIsDragging(false);
+          }}
           selectable
           eventPropGetter={eventPropGetter}
           onDropFromOutside={onDropFromOutside}
@@ -156,7 +168,7 @@ const TimeBlocking = ({}: TimeBlockingProps) => {
           step={10}
           timeslots={12}
           components={{
-            event: TimeEvent,
+            event: (props) => <TimeEvent {...props} doFetch={doFetch} />,
             toolbar: () => <></>,
           }}
         />

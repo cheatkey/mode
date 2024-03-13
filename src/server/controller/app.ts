@@ -16,6 +16,12 @@ const t = initTRPC.create({
 
 export const appRouter = t.router({
   timeblock: {
+    deleteTimeblock: t.procedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async (req) => {
+        return timeblockService.deleteTimeblock(req.input);
+      }),
+
     updateTimeblock: t.procedure
       .input(
         z.object({

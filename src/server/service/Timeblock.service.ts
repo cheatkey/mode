@@ -27,6 +27,14 @@ class TimeblockService {
     return prisma.timeBlock.create(payload);
   };
 
+  deleteTimeblock = async (input: { id: number }) => {
+    return prisma.timeBlock.delete({
+      where: {
+        id: input.id,
+      },
+    });
+  };
+
   updateTimeBlock = async (input: {
     id: number;
     data: {
