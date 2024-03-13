@@ -3,6 +3,16 @@
   border: none !important;
 }
 
+.rbc-event:focus-visible {
+  border: none;
+  outline: none;
+}
+
+.rbc-addons-dnd-resizable:focus-visible {
+  border: none;
+  outline: none;
+}
+
 .rbc-today {
   background-color: #0d0d0d;
 }

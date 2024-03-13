@@ -40,24 +40,8 @@ const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
     setVisible(false);
   });
 
-  const menu = [
-    {
-      name: "삭제",
-      onClick: async () => {
-        await trpc.timeblock.deleteTimeblock.mutate({
-          id: event.id,
-        });
-        await doFetch();
-      },
-    },
-  ];
-
   return (
-    <div
-      ref={mergeRefs([measureRef, ref])}
-      className="h-full"
-      onContextMenu={handleContextMenu}
-    >
+    <div ref={measureRef} className="h-full" onContextMenu={handleContextMenu}>
       {height < 80 ? (
         <div
           className={`flex flex-row gap-2 h-full items-center bg-[#1a1a1a] border-2 border-[#ab68ff] px-5 py-1 ${
@@ -93,7 +77,8 @@ const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
 
       {visible && (
         <div
-          className="bg-gray-800 z-50 p-2 rounded-md min-w-40 flex flex-col"
+          ref={ref}
+          className="bg-gray-800 z-50 py-3 px-4 rounded-lg min-w-40 flex flex-col gap-2"
           style={{
             position: "fixed",
             top: position.y,
@@ -101,15 +86,18 @@ const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
             // boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;",
           }}
         >
-          {menu.map(({ name, onClick }) => (
-            <p
-              key={name}
-              onClick={onClick}
-              className="text-left hover:bg-gray-900 transition-colors py-3 px-4 rounded-sm"
-            >
-              {name}
-            </p>
-          ))}
+          <p className="font-bold text-lg">연결된 작업 없음</p>
+
+          <p
+            onClick={async () => {
+              await trpc.timeblock.deleteTimeblock.mutate({
+                id: event.id,
+              });
+              await doFetch();
+            }}
+          >
+            삭제
+          </p>
         </div>
       )}
     </div>
