@@ -30,6 +30,15 @@ export const appRouter = t.router({
       .mutation(async (req) => {
         return taskService.createTaskFromGoogleDocs(req.input.tasks);
       }),
+    searchTasks: t.procedure
+      .input(
+        z.object({
+          query: z.string().optional(),
+        })
+      )
+      .query(async (req) => {
+        return taskService.searchTasks(req.input.query);
+      }),
   },
   timeblock: {
     deleteTimeblock: t.procedure

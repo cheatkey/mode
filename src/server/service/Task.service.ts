@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { googleService } from "./Google.service";
 import { prisma } from "../prisma";
+import { isNil } from "lodash-es";
 
 const spreadsheetDataSchema = z.array(
   z.object({
@@ -36,6 +37,20 @@ class TaskService {
         point: 1,
         status: "backlog",
       })),
+    });
+  };
+
+  public searchTasks = async (query?: string) => {
+    if (isNil(query)) {
+      return prisma.task.findMany({});
+    }
+
+    return prisma.task.findMany({
+      where: {
+        title: {
+          contains: query,
+        },
+      },
     });
   };
 }

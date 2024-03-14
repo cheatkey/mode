@@ -11,7 +11,7 @@ import { trpc } from "@/server/trpc";
 interface TaskCreatorProps {}
 
 const TaskCreator = ({}: TaskCreatorProps) => {
-  const { showModal } = useTaskCreator();
+  const { showModal, setShowModal } = useTaskCreator();
 
   const handlePasteDocs = async (
     event: React.ClipboardEvent<HTMLDivElement>
@@ -34,14 +34,24 @@ const TaskCreator = ({}: TaskCreatorProps) => {
       }}
     >
       <div
-        className="top-[20%] left-[50%] absolute bg-gray-800 p-10 text-base rounded-2xl w-[50%] flex flex-col gap-4"
+        className="top-[20%] left-[50%] absolute bg-gray-800 px-8 pt-6 pb-8 text-base rounded-3xl w-[50%] flex flex-col gap-4"
         style={{
           transform: "translate(-50%, -50%)",
         }}
       >
-        <h1 className="font-bold text-2xl text-gray-100 tracking-tight">
-          Task 생성
-        </h1>
+        <div className="flex justify-between">
+          <h1 className="font-bold text-2xl text-gray-100 tracking-tight">
+            Task 생성
+          </h1>
+
+          <p
+            onClick={() => {
+              setShowModal(false);
+            }}
+          >
+            닫기
+          </p>
+        </div>
 
         <CreateMethod
           icon={GoogleDocsIcon}
