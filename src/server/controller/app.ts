@@ -6,6 +6,8 @@ import { timeblockService } from "../service/Timeblock.service";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import { googleService } from "../service/Google.service";
+import { taskService } from "../service/Task.service";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Seoul");
@@ -15,6 +17,20 @@ const t = initTRPC.create({
 });
 
 export const appRouter = t.router({
+  task: {
+    createTasksFromSpreadSheet: t.procedure.mutation(async (req) => {
+      return taskService.createTaskFromSpreadSheet();
+    }),
+    createTaskFromGoogleDocs: t.procedure
+      .input(
+        z.object({
+          tasks: z.array(z.string()),
+        })
+      )
+      .mutation(async (req) => {
+        return taskService.createTaskFromGoogleDocs(req.input.tasks);
+      }),
+  },
   timeblock: {
     deleteTimeblock: t.procedure
       .input(z.object({ id: z.number() }))

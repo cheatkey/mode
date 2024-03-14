@@ -5,11 +5,24 @@ import GoogleDocsIcon from "@/app/assets/icons/google-docs.png";
 import GoogleSpreadSheetIcon from "@/app/assets/icons/sheets.png";
 import Image from "next/image";
 import CreateMethod from "./components/CreateMethod";
+import { parseGoogleDocsHtml } from "./utils/parseGoogleDocsHtml";
+import { trpc } from "@/server/trpc";
 
 interface TaskCreatorProps {}
 
 const TaskCreator = ({}: TaskCreatorProps) => {
   const { showModal } = useTaskCreator();
+
+  const handlePasteDocs = async (
+    event: React.ClipboardEvent<HTMLDivElement>
+  ) => {
+    event.preventDefault();
+    const clipboardData = event.clipboardData;
+    const pastedData = clipboardData.getData("text/html");
+
+    const tasks = parseGoogleDocsHtml(pastedData);
+    await trpc.task.createTaskFromGoogleDocs.mutate({ tasks });
+  };
 
   if (!showModal) return <></>;
   return (
@@ -34,12 +47,16 @@ const TaskCreator = ({}: TaskCreatorProps) => {
           icon={GoogleDocsIcon}
           title={"Google Docs - 체크박스로 만들기"}
           description={"구글 문서에서 복사 후, 블록에 붙여넣기를 해주세요."}
+          onPaste={handlePasteDocs}
         />
 
         <CreateMethod
           icon={GoogleSpreadSheetIcon}
           title={"Google Spreadsheet로 만들기"}
           description={"구글 문서에서 복사 후, 블록에 붙여넣기를 해주세요."}
+          onClick={async () => {
+            console.log(await trpc.task.createTasksFromSpreadSheet.mutate());
+          }}
         />
       </div>
     </div>
