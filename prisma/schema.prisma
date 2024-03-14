@@ -53,6 +53,7 @@ model Task {
   content    String
   status     String // Enum 타입 사용 가능
   point      Int
+  icon       String
   timeBlocks TimeBlock[]
   documents  Document[]
   Project    Project?    @relation(fields: [projectId], references: [id])
