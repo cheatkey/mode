@@ -4,6 +4,7 @@ import { format } from "date-fns/format";
 import { trpc } from "@/server/trpc";
 import useCustomContextMenu from "./hooks/useCustomContextMenu";
 import { mergeRefs } from "react-merge-refs";
+import TaskSelector from "./TaskSelector";
 
 interface TimeEventProps {
   event: {
@@ -83,11 +84,10 @@ const TimeEvent = ({ event, doFetch }: TimeEventProps) => {
             position: "fixed",
             top: position.y,
             left: position.x,
-            // boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;",
           }}
         >
-          <p className="font-bold text-lg">연결된 작업 없음</p>
-
+          {/* <p className="font-bold text-lg">연결된 작업 없음</p> */}
+          <TaskSelector />
           <p
             onClick={async () => {
               await trpc.timeblock.deleteTimeblock.mutate({

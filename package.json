@@ -19,6 +19,8 @@
     "@trpc/server": "11.0.0-next-beta.305",
     "date-fns": "^3.4.0",
     "dayjs": "^1.11.10",
+    "googleapis": "^134.0.0",
+    "immer": "^10.0.4",
     "lodash-es": "^4.17.21",
     "nanoid": "^5.0.6",
     "next": "14.1.1",
@@ -29,7 +31,9 @@
     "react-merge-refs": "^2.1.1",
     "react-use": "^17.5.0",
     "superjson": "^2.2.1",
-    "zod": "^3.22.4"
+    "xlsx": "^0.18.5",
+    "zod": "^3.22.4",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@quramy/jest-prisma": "^1.8.0",
